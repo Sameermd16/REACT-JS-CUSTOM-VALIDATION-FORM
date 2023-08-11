@@ -2,10 +2,15 @@ import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { FcCheckmark } from 'react-icons/fc'
 import { RxCross2 } from 'react-icons/rx'
+import { FaInfoCircle } from 'react-icons/fa'
+
+import axios from './api/axios'
 
 const USER_REGEX = /^[A-z][A-z0-9-_]{3,23}$/;
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
 
+//endpoint for registration in the backend api
+// REGISTER_URL = '/register'
 
 function App() {
 
@@ -52,13 +57,18 @@ function App() {
     }
    
     try {
-      const response = await axios.post(REGISTER_URL, JSON.stringify({user, pwd}), 
+      //not typing the entire url as it will append base url
+      const response = await axios.post(REGISTER_URL, 
+        //payload = data that we are sending 
+        //backend is expecting user & pwd property as protery:key are same => just sending destructured {user:user, pwd}
+        JSON.stringify({user, pwd}), 
       {
         headers: {'content-type': 'application/json'},
         withCredentials: true
       }
     )
-    console.log(JSON.stringify(response))
+    //response.data => we get from axios
+    console.log(JSON.stringify(response)) // if not we get object object
     console.log(response?.data)
     console.log(response?.accessToken)
     setSuccess(true)
@@ -79,59 +89,83 @@ function App() {
   }
 
   return (
-    <div className='App'>
-      <section>
-        <p className={errMsg ? 'errmsg' : 'offscreen'} ref={errRef}>{errMsg}</p>
-        <h1>Register</h1>
-        <form onSubmit={handleSubmit}>
-          <label htmlFor='username'>
-            Username:
-            <FcCheckmark className={validName ? 'valid' : 'hide'} />
-              <RxCross2 color='red' className={!user || validName ? 'hide' : 'valid'} />
-          </label>
-          <input 
-            type='text'
-            required
-            autoComplete='off'
-            value={user}
-            onChange={(e) => setUser(e.target.value)}
-            // onFocus={() => setUserFocus(true)}
-            ref={userRef}
-            id='username'
-          />
-          
+    <>
+      {
+        success ? (
+          <section>
+            <h1>Success</h1>
+            <p><a>Sign in</a></p>
+          </section>
+        ) : (
+        <div className='App'>
+          <section>
+            <p className={errMsg ? 'errmsg' : 'offscreen'} ref={errRef}>{errMsg}</p>
+            <h1>Register</h1>
+            <form onSubmit={handleSubmit}>
+              <label htmlFor='username'>
+                Username:
+                <FcCheckmark className={validName ? 'valid' : 'hide'} />
+                  <RxCross2 color='red' className={!user || validName ? 'hide' : 'valid'} />
+              </label>
+              <input 
+                type='text'
+                required
+                autoComplete='off'
+                value={user}
+                onChange={(e) => setUser(e.target.value)}
+                // onFocus={() => setUserFocus(true)}
+                ref={userRef}
+                id='username'
+              />
+              <p className={user && !validName ? 'instructions' : 'offscreen'}>
+                <FaInfoCircle size={16} style={{marginRight: '10px'}} />
+                4 to 24 characters. <br />
+                Must begin with a letter. <br />
+                Letters, numbers, underscores, hyphens allowed.
+              </p>
+            
 
-          <label htmlFor='password'>
-            Password:
-            <FcCheckmark className={validPwd ? 'valid' : 'hide'} />
-            <RxCross2 color='red' className={validPwd || !pwd ? 'hide' : 'valid'}  />
-          </label>
-          <input 
-            type='password'
-            id='password'
-            required
-            value={pwd}
-            onChange={(e) => setPwd(e.target.value)}
-          />
+              <label htmlFor='password'>
+                Password:
+                <FcCheckmark className={validPwd ? 'valid' : 'hide'} />
+                <RxCross2 color='red' className={validPwd || !pwd ? 'hide' : 'valid'}  />
+              </label>
+              <input 
+                type='password'
+                id='password'
+                required
+                value={pwd}
+                onChange={(e) => setPwd(e.target.value)}
+              />
 
+              <p className={pwd && !validPwd ? 'instructions' : 'offscreen'}>
+                <FaInfoCircle size={16} style={{marginRight: '10px'}} />
+                8 to 24 characters. <br />
+                Must include uppercase and lowercase letters, a number and a special character.
+              </p>
 
-          <label htmlFor='match_pwd'>
-            Confirm password: 
-            <FcCheckmark className={validMatch && matchPwd ? 'valid' : 'hide'} />
-            <RxCross2 color='red' className={validMatch || !matchPwd ? 'hide' : 'valid'}  />
-          </label>
-          <input 
-            type='password'
-            id='match_pwd'
-            required
-            value={matchPwd}
-            onChange={(e) => setMatchpwd(e.target.value)}
-          />
-          <button disabled={!validName || !validPwd || !validMatch ? true : false}>Sign Up</button>
-        </form>
-      </section>
-    </div>
+              <label htmlFor='match_pwd'>
+                Confirm password: 
+                <FcCheckmark className={validMatch && matchPwd ? 'valid' : 'hide'} />
+                <RxCross2 color='red' className={validMatch || !matchPwd ? 'hide' : 'valid'}  />
+              </label>
+              <input 
+                type='password'
+                id='match_pwd'
+                required
+                value={matchPwd}
+                onChange={(e) => setMatchpwd(e.target.value)}
+              />
+              <button disabled={!validName || !validPwd || !validMatch ? true : false}>Sign Up</button>
+            </form>
+          </section>
+        </div>
+        )
+      }
+    </>
+    
   )
+  
 }
 
 export default App
